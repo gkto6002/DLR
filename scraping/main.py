@@ -20,7 +20,8 @@ class WorkInfo(TypedDict):
     thumbnail_link: str
     reputation_sum: int
     circle: str
-    character_voice: str
+    character_voice: List[str]
+    tags: List[str]
 
 def scraping_dlsite_ranking(base_url: str) -> List[WorkInfo]:
     headers = {
@@ -101,6 +102,56 @@ def scraping_dlsite_ranking(base_url: str) -> List[WorkInfo]:
         })
 
     logger.info(f"取得した作品数: {len(results)}")
+
+    for work in results:
+        work_url = work["DL_link"]
+
+        headers = {
+        "User-Agent": "Mozilla/5.0"
+        }
+        response = requests.get(work_url, headers=headers)
+
+        if response.status_code != 200:
+            logger.error(f"ページの取得に失敗しました。ステータスコード: {response.status_code}, URL: {work_url}")
+            work["tags"] = [""]
+            continue
+
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+
+
+
+        work_tags = []
+        # tag_div が見つかるかまずデバッグで確認する
+        tag_div = soup.find("div", class_="main_genre")
+        if not tag_div:
+            logger.error(f"クラス 'genre_list_scroll' の div 要素が見つかりませんでした。URL: {work_url}")
+            work["tags"] = [] # エラー時は空リストにするのが一般的
+            continue 
+        
+        a_tags = tag_div.find_all("a")
+        if not a_tags:
+            logger.warning(f"クラス 'tag_genre' の a タグが 'genre_list_scroll' 内に見つかりませんでした。URL: {work_url}")
+            work_tags = [] # 見つからない場合は空リスト
+        else:
+            for a_tag in a_tags:
+                # get_text(strip=True) で取得を試みる
+                tag_name = a_tag.get_text(strip=True)
+                if tag_name:
+                    work_tags.append(tag_name)
+                else:
+                    logger.warning(f"空のタグ名が検出されました。aタグのHTML: {a_tag}")
+        
+        # work_tags が空の場合もログ出力
+        if not work_tags:
+            logger.warning(f"最終的に取得されたタグリストが空でした。URL: {work_url}")
+
+        work["tags"] = work_tags
+
+        work["character_voice"] = extract_voice_actors(response.text)
+
+
+
     return results
 
 def make_tag_url(work_type: str, tags: List[str]) -> str:
@@ -145,6 +196,54 @@ def send_slack_notification(message: str, status: str = "success"):
         print(f"Slack通知を送信しました。ステータスコード: {response.status_code}")
     except requests.exceptions.RequestException as e:
         print(f"Slack通知の送信に失敗しました: {e}")
+
+
+def extract_voice_actors(html_content: str) -> List[str]:
+    """
+    DLsiteの作品詳細ページHTMLから声優情報を抽出する関数。
+    """
+    soup = BeautifulSoup(html_content, 'html.parser')
+    voice_actors = []
+
+    # id="work_outline" のテーブルを探す
+    work_outline_table = soup.find("table", id="work_outline")
+
+    if not work_outline_table:
+        print("Error: 'work_outline' テーブルが見つかりませんでした。")
+        return []
+
+    # 各tr要素をループ
+    # tbodyがある場合はtbody.find_all('tr')、ない場合はtable.find_all('tr')
+    # DLsiteのHTMLはtbodyがあることが多いので、それを前提とします。
+    tr_elements = work_outline_table.find("tbody").find_all("tr") if work_outline_table.find("tbody") else work_outline_table.find_all("tr")
+
+    for tr in tr_elements:
+        # thタグがあり、そのテキストが「声優」または「出演」など声優に関連するラベルか確認
+        # DLsiteの構造を考えると、<th>の声優ラベルで判別するのが最も確実です。
+        th_tag = tr.find("th")
+        if th_tag and "声優" in th_tag.get_text(strip=True):
+            # 同じtr内のtdタグを取得
+            td_tag = tr.find("td")
+            if td_tag:
+                # tdタグ内のaタグから声優名を取得
+                a_tags = td_tag.find_all("a")
+                if a_tags:
+                    for a_tag in a_tags:
+                        voice_actor_name = a_tag.get_text(strip=True)
+                        if voice_actor_name:
+                            voice_actors.append(voice_actor_name)
+                else:
+                    # aタグがない場合（稀ですが、直接テキストの場合）
+                    # 例: 陽向葵ゆか / 柚木つぼめ のような区切りがある場合
+                    # ここはあなたの元のコードでのサークル名取得ロジックに近い
+                    td_text = td_tag.get_text(strip=True)
+                    if td_text:
+                        # スラッシュで分割して複数の声優を扱う
+                        parts = [p.strip() for p in td_text.split('/') if p.strip()]
+                        voice_actors.extend(parts)
+            break # 声優情報を持つtrを見つけたらループを終了 (通常は一つだけのはず)
+
+    return voice_actors
 
 def lambda_handler(event: Dict, context): # eventの型ヒントを追加
     tag_sets = [
@@ -269,3 +368,51 @@ def lambda_handler(event: Dict, context): # eventの型ヒントを追加
         "statusCode": 200,
         "body": f"{len(tag_sets)}セットの保存処理を実施しました"
     }
+
+# --- ここからがローカルテスト用のコード ---
+# if __name__ == "__main__":
+#     print("--- ローカルテスト開始: 特定のURLをスクレイピング ---")
+
+#     # テストしたいDLsiteのランキングURLをここに設定します
+#     # 例: 音声作品のトレンドランキング
+#     # test_url = "https://www.dlsite.com/maniax/fsr/=/age_category[0]/adult/order/trend/work_type_category[0]/audio/options[0]/JPN/options[1]/NM/release_term/month"
+
+#     # 例: 特定のタグ（男性受け）の音声作品ランキング
+#     test_tags = ["156"] # 男性受けのタグID
+#     test_work_type = "audio"
+#     test_url = make_tag_url(test_work_type, test_tags)
+
+
+#     logger.info(f"テスト対象URL: {test_url}")
+
+#     try:
+#         scraped_data = scraping_dlsite_ranking(test_url)
+
+#         print("\n--- スクレイピング結果 ---")
+#         if scraped_data:
+#             # 最初の数件のみ表示して確認
+#             for i, work in enumerate(scraped_data[:5]): # 最初の5件だけ表示
+#                 print(f"--- 作品 {i+1} ---")
+#                 print(f"  タイトル: {work.get('title')}")
+#                 print(f"  RJ番号: {work.get('RJ_number')}")
+#                 print(f"  DLリンク: {work.get('DL_link')}")
+#                 print(f"  サムネイル: {work.get('thumbnail_link')}")
+#                 print(f"  評価数: {work.get('reputation_sum')}")
+#                 print(f"  サークル: {work.get('circle')}")
+#                 print(f"  声優: {work.get('character_voice')}")
+#                 print(f"  タグ: {', '.join(work.get('tags', []))}")
+#                 print("-" * 20)
+            
+#             if len(scraped_data) > 5:
+#                 print(f"... 他に {len(scraped_data) - 5} 件の作品があります。")
+
+#             # 全てのデータをJSON形式で出力したい場合
+#             # print("\n--- 全てのデータ (JSON) ---")
+#             # print(json.dumps(scraped_data, ensure_ascii=False, indent=2))
+#         else:
+#             print("スクレイピング結果は空でした。ログを確認してください。")
+
+#     except Exception as e:
+#         logger.error(f"ローカルテスト中に予期せぬエラーが発生しました: {e}")
+
+#     print("--- ローカルテスト終了 ---")
