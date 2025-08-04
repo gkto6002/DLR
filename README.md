@@ -25,21 +25,21 @@ feat: 〇〇なため、△△を追加
 graph TD
     Pages -->|表示する| Views
     Views -->|データを渡す| Templates
-    Templates -->|レイアウトする| Parts
+    Templates -->|レイアウトする| UI
 ```
 
 ---
 
 ### 各レイヤーの責務
 
-- **Parts (`/components/parts/`)**
+- **UI (`/components/ui/`)**
 
   - ロジックを持たない最小単位の UI 部品（例: `Button`, `Input`）。
   - `props` に基づいて表示するだけの「ダムコンポーネント」。
 
 - **Templates (`/components/templates/`)**
 
-  - `Parts` を組み合わせて作るレイアウトの雛形（例: `UserList`, `ArticleGrid`）。
+  - `UI` を組み合わせて作るレイアウトの雛形（例: `UserList`, `ArticleGrid`）。
   - 具体的なデータは `props` で受け取る。
 
 - **Views (`/components/views/`)**
