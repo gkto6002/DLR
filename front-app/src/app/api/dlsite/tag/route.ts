@@ -16,6 +16,6 @@ export async function GET(req: NextRequest) {
     const data = await response.json();
     return new Response(JSON.stringify(data), { status: 200 });
   } catch (err) {
-    return new Response(JSON.stringify({ error: 'Fetch failed' }), { status: 500 });
+    return new Response(JSON.stringify({ error: err }), { status: 500 });
   }
 }

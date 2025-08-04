@@ -20,6 +20,7 @@ export default function CheckDLsite() {
       const json = await res.json();
       setTagData(json);
     } catch (err) {
+      console.log(err);
       setError("Tag fetch failed.");
     } finally {
       setLoading(false);
@@ -34,6 +35,7 @@ export default function CheckDLsite() {
       const json = await res.json();
       setTagCounts(json);
     } catch (err) {
+      console.log(err);
       setError("Tag count fetch failed.");
     } finally {
       setLoading(false);
