@@ -1,8 +1,7 @@
 // src/lib/ssg/buildTagMonthParams.ts
 import { periodToMonth } from "@/lib/periods/normalize";
 import { extractTagsFromRawTagCounts } from "@/lib/fetch/fetchers";
-
-type BatchItem = { period: string; data: unknown };
+import type { BatchItem } from "@/types/batch"; 
 export type TagMonthParam = { month: string; tag: string };
 
 // batch（[{period:"YYMMearly",data},...]）→ [{month:"YYMM", tag:"nnn"}...]

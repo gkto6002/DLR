@@ -1,7 +1,6 @@
 import "server-only";
 import { enumerateDownTo2506late } from "@/lib/fetch/periods";
-
-export type BatchItem = { period: string; data: unknown };
+import { BatchItem } from "@/types/batch";
 
 export async function fetchAllTagCountsBatch(): Promise<BatchItem[]> {
   const UPSTREAM = process.env.UPSTREAM_API_BASE;

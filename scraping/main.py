@@ -65,8 +65,8 @@ def scraping_dlsite_ranking(base_url: str) -> List[WorkInfo]:
 
         thumbnail_link = ""
         thumb_img = work.find("img", class_="lazy")
-        if thumb_img and thumb_img.has_attr("data-src"): # 'src'ではなく'data-src'を使用するサイトもあるため変更
-            thumbnail_link = thumb_img["data-src"] # ここを修正
+        if thumb_img and thumb_img.has_attr("src"): # 'src'を使用するサイトもあるため変更
+            thumbnail_link = thumb_img["src"] # ここを修正
 
         reputation_sum = 0
         rating_div = work.find("div", class_="star_rating") # class名が可変なのでより汎用的に
