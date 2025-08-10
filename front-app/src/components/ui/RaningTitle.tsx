@@ -13,7 +13,7 @@ export default function RankingTitle({ month, tag }: Props) {
   const tagLabel = labelOf(tag); // タグラベルの解決（必要に応じて）
 
   return (
-    <header className="text-center my-8 md:my-10">
+    <header id="page-title" className="text-center my-8 md:my-10">
       <h1 className="text-3xl md:text-4xl font-bold text-gray-100">
         {year}年 {monthNum}月
       </h1>

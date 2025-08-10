@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 export function useTagPeriodNav() {
   const router = useRouter();
   const go = useCallback((monthYYMM: string, tagId: string) => {
-    router.push(`/${monthYYMM}/${encodeURIComponent(tagId)}`);
+    router.push(`/${monthYYMM}/${encodeURIComponent(tagId)}#page-title`);
   }, [router]);
   return { go };
 }
