@@ -5,12 +5,11 @@ import { useMemo, useState } from "react";
 import MonthSelect from "@/components/ui/MonthSelect";
 import TagPill from "@/components/ui/TagPill";
 import { useTagPeriodNav } from "@/lib/routing/useTagNav";
-
-type TagItem = { id: string; label: string };
+import { TagItem } from "@/types/tag";
 
 type Props = {
-  monthsDesc: string[];                 // "YYMM" 降順
-  monthToTags: Record<string, TagItem[]>; // month -> earlyのtag一覧
+  monthsDesc: string[];
+  monthToTags: Record<string, TagItem[]>;
   initialMonth?: string;
 };
 
@@ -28,13 +27,15 @@ export default function MonthEarlyTagNavigator({
   const { go } = useTagPeriodNav();
 
   return (
-    <section className="space-y-4">
+    <section className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 md:p-6 space-y-4">
       <div className="flex items-center gap-3">
-        <span className="text-sm text-gray-500">月を選択</span>
+        <span className="text-sm text-gray-400 flex-shrink-0">月を選択</span>
         <MonthSelect value={month} months={monthsDesc} onChange={setMonth} />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+      <div className="border-t border-slate-700 my-4"></div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
         {tags.length === 0 && (
           <p className="text-sm text-gray-500 col-span-full">
             この月（early）にタグは見つかりませんでした。

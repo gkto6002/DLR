@@ -1,4 +1,5 @@
 // src/lib/tags/map.ts
+import type { TagId, TagLabel, TagMap } from "@/types/tag";
 export const TAG_NAME_BY_ID: Record<string, string> = {
   "528": "本番なし",
   "156": "男性受け",
@@ -26,6 +27,6 @@ export const TAG_NAME_BY_ID: Record<string, string> = {
   "447": "風俗/ソープ",
 };
 
-export function labelOf(tagId: string): string {
+export function labelOf(tagId: TagId): TagLabel {
   return TAG_NAME_BY_ID[tagId] ?? `タグ${tagId}`;
 }

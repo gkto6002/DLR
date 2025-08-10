@@ -1,6 +1,7 @@
 // lib/dlsite/fetchers.ts
 import "server-only";
 import { enumerateDownTo2506late } from "@/lib/fetch/periods";
+import { RankingJson } from "@/types/ranking";
 
 export type BatchItem = { period: string; data: unknown };
 
@@ -25,11 +26,8 @@ export async function fetchAllTagCountsBatch(): Promise<BatchItem[]> {
 }
 
 /** 指定 period × tag のランキングを取得（生JSON） */
-export async function fetchRanking(
-  period: string,
-  tag: string
-): Promise<unknown> {
-  console.log(period, tag);
+export async function fetchRanking(period: string, tag: string): Promise<RankingJson[]> {
+  console.log(period, tag)
   if (!UPSTREAM) throw new Error("UPSTREAM_API_BASE not set");
   const r = await fetch(`${UPSTREAM}/${period}/${tag}.json`, {
     cache: "force-cache",
