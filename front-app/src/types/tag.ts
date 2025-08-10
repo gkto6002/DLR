@@ -15,3 +15,7 @@ export type TagMap = Record<TagId, TagLabel>;
 
 /** 月→タグ一覧（MonthTagNav系のpropsで使う） */
 export type TagItemsByMonth = Record<string, TagItem[]>;
+
+export type TagCounts = {
+  tag_id: string[]
+}[];

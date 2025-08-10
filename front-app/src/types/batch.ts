@@ -1,5 +1,6 @@
 // src/types/batch.ts
-import type { TagCounts } from "@/types/tag";
+
+import { TagCounts } from "./tag";
 
 /** fetchAllTagCountsBatch() の1件 */
 export interface BatchItem {

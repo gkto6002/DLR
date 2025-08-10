@@ -1,5 +1,7 @@
 // src/lib/tags/map.ts
-import type { TagId, TagLabel, TagMap } from "@/types/tag";
+
+import { TagId, TagLabel } from "../../types/tag";
+
 export const TAG_NAME_BY_ID: Record<string, string> = {
   "528": "本番なし",
   "156": "男性受け",
