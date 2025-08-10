@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import YearMonthPicker from "@/components/ui/YearMonthPicker";
+import { TagButton } from "@/components/ui/TagButton";
 
 export default function CheckDLsite() {
   const [prefix, setPrefix] = useState("2506late");
@@ -9,6 +11,7 @@ export default function CheckDLsite() {
   const [tagCounts, setTagCounts] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [active, setActive] = useState(false);
 
   const fetchTag = async () => {
     setLoading(true);
@@ -101,6 +104,16 @@ export default function CheckDLsite() {
             {tagCounts ? JSON.stringify(tagCounts, null, 2) : "データなし"}
           </div>
         </div>
+      </div>
+      <div className="min-h-screen bg-gray-100 p-8">
+        <YearMonthPicker />
+      </div>
+      <div className="min-h-screen bg-gray-100 p-8 flex items-center justify-center">
+      <TagButton
+        label="サンプルタグ"
+        isActive={active}
+        onClick={() => setActive(!active)}
+      />
       </div>
     </div>
   );
