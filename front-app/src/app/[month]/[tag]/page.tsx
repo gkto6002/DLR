@@ -7,6 +7,7 @@ import {
 } from "@/lib/fetch/fetchers";
 import { buildTagMonthParamsFromBatch } from "@/lib/ssg/buildParams";
 import MonthEarlyTagNavigatorFromBatch from "@/components/view/EarlyTagsByMonth";
+import RankingTitle from "@/components/ui/RaningTitle";
 
 // 環境で切替: 開発やCIがUPSTREAMに届かない時もビルド通す
 const SKIP_SSG = process.env.NEXT_SKIP_SSG === "1";
@@ -48,13 +49,12 @@ export default async function Page({ params }: PageProps) {
     fetchRankingIfExists(`${month}late`, tag),
   ]);
 
-  // const hasAny = !!(early || late);
-
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 space-y-10">
 
       {/* ★ 追加：遷移UI（pageでfetch済みのbatchを渡す／整形はview側） */}
       <MonthEarlyTagNavigatorFromBatch batch={allTagCounts} initialMonth={month} />
+      <RankingTitle month={month} tag={tag} />
       <RankingView early={early} late={late}/>
     </main>
   );
