@@ -33,7 +33,7 @@ export function toPeriod(s: { yy: number; mm: number; half: Half }) {
 }
 
 export function enumerateDownTo2506late(): string[] {
-  const floor = "2506late";
+  const floor = "2507early";
   const out: string[] = [];
   let cur = currentSlotJST();
   for (let i = 0; i < 200; i++) {
