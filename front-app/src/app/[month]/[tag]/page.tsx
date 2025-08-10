@@ -1,34 +1,31 @@
-// app/[month]/[tag]/page.tsx
+// src/app/[month]/[tag]/page.tsx
 import {
   fetchAllTagCountsBatch,
   fetchRanking,
-  extractTagsFromRawTagCounts,
-} from "@/lib/dlsite/fetchers";
+} from "@/lib/fetch/fetchers";
+import { buildTagMonthParamsFromBatch } from "@/lib/ssg/buildParams";
+import MonthEarlyTagNavigatorFromBatch from "@/components/view/MonthEarlyTagNavigatorFromBatch";
 
-// export const revalidate = 21600; // ISR: 6h
+// 環境で切替: 開発やCIがUPSTREAMに届かない時もビルド通す
+const SKIP_SSG = process.env.NEXT_SKIP_SSG === "1";
 
-export const dynamicParams = false;
+// 失敗時に動的解決できるように
+export const dynamicParams = false; // ← まずはtrue運用で安定化
+// ISRしたいなら↓を復活（任意）
+// export const revalidate = 21600;
 
 type PageProps = { params: Promise<{ month: string; tag: string }> };
 
-// SSG: 全期間の tag_counts から「その月(YYMM)ごとのタグ集合」を作って静的パスを生成
+// SSG: ここは共通ヘルパー + try/catch
 export async function generateStaticParams() {
-  const batch = await fetchAllTagCountsBatch(); // [{ period: "2508early", data: [...] }, ...]
-  const byMonth = new Map<string, Set<string>>();
-
-  for (const { period, data } of batch) {
-    const month = period.slice(0, 4); // "YYMM"
-    const tags = extractTagsFromRawTagCounts(data);
-    if (!byMonth.has(month)) byMonth.set(month, new Set());
-    const set = byMonth.get(month)!;
-    tags.forEach((t) => set.add(t));
+  if (SKIP_SSG) return [];
+  try {
+    const batch = await fetchAllTagCountsBatch();
+    return buildTagMonthParamsFromBatch(batch);
+  } catch (e) {
+    console.warn("[generateStaticParams] upstream fetch failed. Skip prebuild.", e);
+    return [];
   }
-
-  const params: Array<{ month: string; tag: string }> = [];
-  for (const [month, set] of byMonth) {
-    for (const tag of set) params.push({ month, tag });
-  }
-  return params;
 }
 
 async function fetchRankingIfExists(period: string, tag: string) {
@@ -36,16 +33,15 @@ async function fetchRankingIfExists(period: string, tag: string) {
     const json = await fetchRanking(period, tag);
     return { period, json };
   } catch {
-    return null; // 404/403 等は「そのスロットは無し」として無視
+    return null;
   }
 }
 
 export default async function Page({ params }: PageProps) {
-  const { month, tag } = await params; // month = "YYMM" 例: "2506"
+  const { month, tag } = await params;
 
-  // early/late の両方を試す（存在しなければ null）
   const [allTagCounts, early, late] = await Promise.all([
-    fetchAllTagCountsBatch(), // 全期間の tag_counts（生JSON）を表示用に
+    fetchAllTagCountsBatch(),
     fetchRankingIfExists(`${month}early`, tag),
     fetchRankingIfExists(`${month}late`, tag),
   ]);
@@ -55,44 +51,34 @@ export default async function Page({ params }: PageProps) {
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 space-y-10">
       <header className="space-y-1">
-        <h1 className="text-2xl font-bold">
-          /{month}/{tag}
-        </h1>
+        <h1 className="text-2xl font-bold">/{month}/{tag}</h1>
         <p className="text-sm text-gray-600">
-          同月の early / late ランキング（生JSON）＋ 全期間の
-          tag_counts（生JSON）
+          同月の early / late ランキング（生JSON）＋ 全期間の tag_counts（生JSON）
         </p>
       </header>
 
-      {/* ランキング（同月の early/late を同ページに） */}
-      <section className="rounded-2xl border p-4 shadow-sm space-y-6">
-        <h2 className="text-xl font-semibold">
-          Ranking JSON ({month} / {tag})
-        </h2>
+      {/* ★ 追加：遷移UI（pageでfetch済みのbatchを渡す／整形はview側） */}
+      <MonthEarlyTagNavigatorFromBatch batch={allTagCounts} initialMonth={month} />
 
+      {/* ランキング表示（既存） */}
+      <section className="rounded-2xl border p-4 shadow-sm space-y-6">
+        <h2 className="text-xl font-semibold">Ranking JSON ({month} / {tag})</h2>
         {!hasAny && (
           <p className="text-sm text-gray-500">
-            この月のランキングは見つかりませんでした（early/late
-            いずれも無し）。
+            この月のランキングは見つかりませんでした（early/late いずれも無し）。
           </p>
         )}
-
         {early && (
           <div>
-            <h3 className="mb-2 font-mono text-sm font-semibold">
-              {early.period}
-            </h3>
+            <h3 className="mb-2 font-mono text-sm font-semibold">{early.period}</h3>
             <pre className="overflow-x-auto rounded bg-gray-100 p-3 text-xs">
               {JSON.stringify(early.json, null, 2)}
             </pre>
           </div>
         )}
-
         {late && (
           <div>
-            <h3 className="mb-2 font-mono text-sm font-semibold">
-              {late.period}
-            </h3>
+            <h3 className="mb-2 font-mono text-sm font-semibold">{late.period}</h3>
             <pre className="overflow-x-auto rounded bg-gray-100 p-3 text-xs">
               {JSON.stringify(late.json, null, 2)}
             </pre>
@@ -100,11 +86,9 @@ export default async function Page({ params }: PageProps) {
         )}
       </section>
 
-      {/* 全期間の tag_counts（生JSONのまま、最新→過去） */}
+      {/* 全期間の tag_counts（既存） */}
       <section className="rounded-2xl border p-4 shadow-sm">
-        <h2 className="mb-3 text-xl font-semibold">
-          All Periods tag_counts JSON (latest → past)
-        </h2>
+        <h2 className="mb-3 text-xl font-semibold">All Periods tag_counts JSON (latest → past)</h2>
         <div className="space-y-6">
           {allTagCounts.map(({ period, data }) => (
             <div key={period}>

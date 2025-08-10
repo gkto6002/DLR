@@ -1,120 +1,52 @@
-"use client";
+// app/page.tsx
+import { redirect } from "next/navigation";
+import { fetchAllTagCountsBatch, extractTagsFromRawTagCounts } from "@/lib/fetch/fetchers";
+import { periodToMonth } from "@/lib/periods/normalize";
 
-import { useState } from "react";
-import YearMonthPicker from "@/components/ui/YearMonthPicker";
-import { TagButton } from "@/components/ui/TagButton";
+// （任意）キャッシュしたい場合はISR
+// export const revalidate = 21600;
 
-export default function CheckDLsite() {
-  const [prefix, setPrefix] = useState("2506late");
-  const [filename, setFilename] = useState("032.json");
-  const [tagData, setTagData] = useState(null);
-  const [tagCounts, setTagCounts] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [active, setActive] = useState(false);
+export default async function Home() {
+  const batch = await fetchAllTagCountsBatch(); // [{ period: "YYMMearly", data }, ...]
+  if (!batch || batch.length === 0) {
+    // データが無ければトップはそのまま（簡易メッセージ）
+    return (
+      <main className="mx-auto max-w-3xl p-6">
+        <h1 className="text-lg font-semibold">データが見つかりませんでした</h1>
+      </main>
+    );
+  }
 
-  const fetchTag = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `/api/dlsite/tag?prefix=${prefix}&filename=${filename}`
-      );
-      const json = await res.json();
-      setTagData(json);
-    } catch (err) {
-      console.log(err);
-      setError("Tag fetch failed.");
-    } finally {
-      setLoading(false);
+  // 1) 全ての月（YYMM）を抽出して降順
+  const monthSet = new Set<string>();
+  for (const { period } of batch) {
+    const m = periodToMonth(period);
+    if (m) monthSet.add(m);
+  }
+  const monthsDesc = Array.from(monthSet).sort((a, b) => (a < b ? 1 : a > b ? -1 : 0));
+  const latestMonth = monthsDesc[0];
+
+  // 2) early にタグ "032" が含まれる最新の月を探す
+  let monthWith032: string | null = null;
+  // 直近から順にチェック
+  for (const m of monthsDesc) {
+    const early = batch.find((b) => b.period === `${m}early`);
+    if (!early) continue;
+    const tags = extractTagsFromRawTagCounts(early.data); // ["032","046",...]
+    if (tags?.includes("032")) {
+      monthWith032 = m;
+      break;
     }
-  };
+  }
 
-  const fetchTagCounts = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`/api/dlsite/tag_counts?prefix=${prefix}`);
-      const json = await res.json();
-      setTagCounts(json);
-    } catch (err) {
-      console.log(err);
-      setError("Tag count fetch failed.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const targetMonth = monthWith032 ?? latestMonth;
+  if (!targetMonth) {
+    return (
+      <main className="mx-auto max-w-3xl p-6">
+        <h1 className="text-lg font-semibold">利用可能な月がありません</h1>
+      </main>
+    );
+  }
 
-  return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <div className="max-w-3xl mx-auto bg-white shadow-md rounded-xl p-8">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">DLsite データチェッカー</h1>
-
-        <div className="mb-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Prefix</label>
-            <input
-              type="text"
-              value={prefix}
-              onChange={(e) => setPrefix(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-4 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="例: 2506late"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">Filename</label>
-            <input
-              type="text"
-              value={filename}
-              onChange={(e) => setFilename(e.target.value)}
-              className="w-full border border-gray-300 rounded-md px-4 py-2 mt-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="例: 032.json"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-4 mb-8">
-          <button
-            onClick={fetchTag}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-6 py-2 rounded-md transition"
-          >
-            タグデータ取得
-          </button>
-          <button
-            onClick={fetchTagCounts}
-            className="bg-green-500 hover:bg-green-600 text-white font-semibold px-6 py-2 rounded-md transition"
-          >
-            タグ数取得
-          </button>
-        </div>
-
-        {loading && <p className="text-blue-600 mb-4">読み込み中...</p>}
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-
-        <div className="mb-8">
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">タグデータ</h2>
-          <div className="bg-black rounded-md p-4 overflow-auto max-h-96 text-sm whitespace-pre-wrap">
-            {tagData ? JSON.stringify(tagData, null, 2) : "データなし"}
-          </div>
-        </div>
-
-        <div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">タグ数</h2>
-          <div className="bg-black rounded-md p-4 overflow-auto max-h-96 text-sm whitespace-pre-wrap">
-            {tagCounts ? JSON.stringify(tagCounts, null, 2) : "データなし"}
-          </div>
-        </div>
-      </div>
-      <div className="min-h-screen bg-gray-100 p-8">
-        <YearMonthPicker />
-      </div>
-      <div className="min-h-screen bg-gray-100 p-8 flex items-center justify-center">
-      <TagButton
-        label="サンプルタグ"
-        isActive={active}
-        onClick={() => setActive(!active)}
-      />
-      </div>
-    </div>
-  );
+  redirect(`/${targetMonth}/032`);
 }

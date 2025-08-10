@@ -1,6 +1,6 @@
 // lib/dlsite/fetchers.ts
 import "server-only";
-import { enumerateDownTo2506late } from "@/lib/periods";
+import { enumerateDownTo2506late } from "@/lib/fetch/periods";
 
 export type BatchItem = { period: string; data: unknown };
 
@@ -13,7 +13,9 @@ export async function fetchAllTagCountsBatch(): Promise<BatchItem[]> {
   const periods = enumerateDownTo2506late();
   const results = await Promise.all(
     periods.map(async (p) => {
-      const r = await fetch(`${UPSTREAM}/index/${p}/tag_counts`, { cache: "force-cache" });
+      const r = await fetch(`${UPSTREAM}/index/${p}/tag_counts`, {
+        cache: "force-cache",
+      });
       if (!r.ok) return null;
       const data = await r.json(); // ← 生JSON
       return { period: p, data } as BatchItem;
@@ -23,10 +25,15 @@ export async function fetchAllTagCountsBatch(): Promise<BatchItem[]> {
 }
 
 /** 指定 period × tag のランキングを取得（生JSON） */
-export async function fetchRanking(period: string, tag: string): Promise<unknown> {
-  console.log(period, tag)
+export async function fetchRanking(
+  period: string,
+  tag: string
+): Promise<unknown> {
+  console.log(period, tag);
   if (!UPSTREAM) throw new Error("UPSTREAM_API_BASE not set");
-  const r = await fetch(`${UPSTREAM}/${period}/${tag}.json`, { cache: "force-cache" });
+  const r = await fetch(`${UPSTREAM}/${period}/${tag}.json`, {
+    cache: "force-cache",
+  });
   if (!r.ok) throw new Error(`Ranking fetch failed: ${r.status}`);
   return r.json(); // ← 生JSON
 }
