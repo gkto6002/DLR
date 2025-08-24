@@ -31,7 +31,6 @@ export default async function Home() {
   // 直近から順にチェック
   for (const m of monthsDesc) {
     const early = batch.find((b) => b.period === `${m}early`);
-    console.log("Checking early for month:", m, early?.data);
     if (!early) continue;
     const tags = extractTagsFromRawTagCounts(early.data); // ["032","046",...]
     if (tags?.includes("032")) {

@@ -28,22 +28,45 @@ export async function fetchAllTagCountsBatch(): Promise<BatchItem[]> {
 export async function fetchRanking(period: string, tag: string): Promise<RankingJson[]> {
   console.log(period, tag)
   if (!UPSTREAM) throw new Error("UPSTREAM_API_BASE not set");
-  const r = await fetch(`${UPSTREAM}/${period}/${tag}.json`, {
-    cache: "force-cache",
-  });
+  const r = await fetch(`${UPSTREAM}/${period}/${tag}.json`);
   if (!r.ok) throw new Error(`Ranking fetch failed: ${r.status}`);
   return r.json(); // ← 生JSON
 }
 
-/** tag_counts の生JSONから tag 候補を取り出す（"032" 等） */
+// /** tag_counts の生JSONから tag 候補を取り出す（"032" 等） */
+// export function extractTagsFromRawTagCounts(raw: TagCounts): string[] {
+//   if (!Array.isArray(raw)) return [];
+//   const tags = new Set<string>();
+//   for (const row of raw) {
+//     const id = row?.tag_id;
+//     if (Array.isArray(id) && typeof id[0] === "string" && id[0]) {
+//       tags.add(id[0]);
+//     }
+//   }
+//   return Array.from(tags);
+// }
+
+/** tag_counts の生JSONから tag 候補を取り出す */
 export function extractTagsFromRawTagCounts(raw: TagCounts): string[] {
   if (!Array.isArray(raw)) return [];
   const tags = new Set<string>();
+
   for (const row of raw) {
     const id = row?.tag_id;
-    if (Array.isArray(id) && typeof id[0] === "string" && id[0]) {
-      tags.add(id[0]);
+    
+    // tag_idが配列であり、空ではないことを確認
+    if (Array.isArray(id) && id.length > 0) {
+      // 配列内のすべての文字列をアンダースコアで結合
+      const combinedTag = id
+        .filter((item) => typeof item === "string" && item)
+        .join("_");
+      
+      // 結合された文字列が空でなければ追加
+      if (combinedTag) {
+        tags.add(combinedTag);
+      }
     }
   }
+
   return Array.from(tags);
 }
