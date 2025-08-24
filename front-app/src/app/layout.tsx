@@ -73,7 +73,7 @@ export default function RootLayout({
               const updateVisibility = () => {
                 const doc = document.documentElement;
                 const scrollable = Math.max(0, doc.scrollHeight - window.innerHeight);
-                const threshold = scrollable / 6; // ページ（スクロール可能領域）の半分
+                const threshold = scrollable / 12; // ページ（スクロール可能領域）の半分
                 if (window.scrollY > threshold) {
                   btn.style.display = 'flex';
                   btn.style.alignItems = 'center';
