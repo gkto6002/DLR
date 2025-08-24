@@ -1,15 +1,69 @@
+"use client";
+
 import { RankingJson } from "@/types/ranking";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 type RankingCardProps = {
   rank: number;
   item: RankingJson;
+  type?: "ranking" | "favorite"
 };
 
-export default function RankingCard({ rank, item }: RankingCardProps) {
+// localStorageのキー
+const FAVORITES_KEY = "favorites";
+
+export default function RankingCard({ rank, item, type="ranking" }: RankingCardProps) {
+  const [isFavorite, setIsFavorite] = useState(false);
+
+  // コンポーネントがマウントされた時に、お気に入り状態をチェック
+  useEffect(() => {
+    const favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]");
+    setIsFavorite(
+      favorites.some((fav: RankingJson) => fav.RJ_number === item.RJ_number)
+    );
+  }, [item.RJ_number]);
+
+  const toggleFavorite = () => {
+  let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]") as RankingJson[];
+  const isCurrentlyFavorite = favorites.some(
+    (fav) => fav.RJ_number === item.RJ_number
+  );
+
+  if (isCurrentlyFavorite) {
+    // 既にお気に入りなら削除
+    favorites = favorites.filter(
+      (fav) => fav.RJ_number !== item.RJ_number
+    );
+    setIsFavorite(false);
+  } else {
+    // お気に入りに登録
+    favorites.push(item);
+    setIsFavorite(true);
+  }
+
+  // Setを使って重複を排除
+  const uniqueFavorites = Array.from(
+    new Set(favorites.map((fav) => JSON.stringify(fav)))
+  ).map((str: unknown) => {
+    // 型ガードを使用して unknown を string に絞り込む
+    if (typeof str === 'string') {
+      return JSON.parse(str);
+    }
+    // または、アサーションを使用する (推奨はしない)
+    // return JSON.parse(str as string);
+  });
+
+  localStorage.setItem(FAVORITES_KEY, JSON.stringify(uniqueFavorites));
+};
+
   const asmrOneLink = `https://www.asmr.one/work/${item.RJ_number}`;
-  const jpAsmrLink = `https://japaneseasmr.com/?s=${item.RJ_number}`.replace("RJ", "");
+  const jpAsmrLink = `https://japaneseasmr.com/?s=${item.RJ_number}`.replace(
+    "RJ",
+    ""
+  );
 
   // サムネイルURLを加工
   const thumbnailUrl = item.thumbnail_link
@@ -18,13 +72,17 @@ export default function RankingCard({ rank, item }: RankingCardProps) {
 
   return (
     <div className="bg-slate-800 text-white rounded-lg overflow-hidden shadow-lg border border-slate-700 flex flex-col h-full transition-transform duration-300 hover:scale-105 hover:shadow-blue-500/20">
-      {/* ランキング番号 */}
-      <div className="px-3">
-        <span className="text-xl font-bold text-blue-400">#{rank}</span>
+
+      {/* ランキング番号とハートボタン */}
+      <div className="px-3 py-2 flex justify-between items-center">
+        {type === "ranking" ? <span className="text-xl font-bold text-blue-400">#{rank}</span> : <span className="text-xl font-bold text-pink-400">No.{rank}</span>}
+        <button onClick={toggleFavorite} className="text-xl text-red-400 hover:text-red-500 transition-colors duration-200">
+          {isFavorite ? <FaHeart /> : <FaRegHeart />}
+        </button>
       </div>
 
       {/* サムネイル */}
-      <div className="relative w-full aspect-[4/3]"> 
+      <div className="relative w-full aspect-[4/3]">
         <Image
           src={thumbnailUrl}
           alt={item.title}
@@ -34,14 +92,10 @@ export default function RankingCard({ rank, item }: RankingCardProps) {
         />
       </div>
 
-
       {/* テキスト部分 */}
       <div className="p-2 space-y-1 flex flex-col flex-grow">
         <div className="flex-grow">
-          <h3
-            className="font-bold text-lg line-clamp-2"
-            title={item.title}
-          >
+          <h3 className="font-bold text-lg line-clamp-2" title={item.title}>
             {item.title}
           </h3>
 
@@ -50,13 +104,11 @@ export default function RankingCard({ rank, item }: RankingCardProps) {
           </p>
           <p className="text-sm text-gray-400">サークル: {item.circle}</p>
           <p className="text-sm text-gray-400">RJ番号: {item.RJ_number}</p>
+          <p className="text-sm text-gray-400">評価数: {item.reputation_sum}</p>
 
           {/* ✅ タグ: すべて表示 */}
           {item.tags?.length > 0 && (
-            <div
-              className="mt-2 flex flex-wrap gap-2"
-              aria-label="作品タグ"
-            >
+            <div className="mt-2 flex flex-wrap gap-2" aria-label="作品タグ">
               {item.tags.map((tag) => (
                 <span
                   key={tag}
