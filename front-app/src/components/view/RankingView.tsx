@@ -32,7 +32,7 @@ export default function RankingView({
   const lateItems: RankingJson[] = late && isRankingJsonArray(late.json) ? late.json : [];
 
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8 space-y-10">
+    <main className="mx-auto max-w-6xl py-8 space-y-10">
       {/* 表示ロジックをRankingTabsコンポーネントに委任 */}
       <RankingTabs earlyItems={earlyItems} lateItems={lateItems} tag={tag}/>
     </main>
