@@ -53,9 +53,9 @@ export default async function Page({ params }: PageProps) {
     <main className="mx-auto max-w-6xl px-4 py-8 space-y-10">
 
       {/* ★ 追加：遷移UI（pageでfetch済みのbatchを渡す／整形はview側） */}
-      <MonthEarlyTagNavigatorFromBatch batch={allTagCounts} initialMonth={month} />
+      <MonthEarlyTagNavigatorFromBatch batch={allTagCounts} initialMonth={month} tag={tag} />
       <RankingTitle month={month} tag={tag} />
-      <RankingView early={early} late={late}/>
+      <RankingView early={early} late={late} tag={tag}/>
     </main>
   );
 }

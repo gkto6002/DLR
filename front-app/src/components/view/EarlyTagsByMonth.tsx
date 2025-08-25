@@ -11,9 +11,10 @@ type Props = {
   batch: BatchItem[];
   /** 既定の表示月（/ [month] / [tag] の month を渡すとUX良） */
   initialMonth?: string;
+  tag: string;
 };
 
-export default function EarlyTagsByMonth({ batch, initialMonth }: Props) {
+export default function EarlyTagsByMonth({ batch, initialMonth, tag }: Props) {
   // earlyのみ対象にして 「月→タグID集合」 を構築
   const monthToTags = new Map<MonthKey, Set<string>>();
 
@@ -42,6 +43,7 @@ export default function EarlyTagsByMonth({ batch, initialMonth }: Props) {
       monthsDesc={monthsDesc}
       monthToTags={monthToTagsResolved}
       initialMonth={initialMonth ?? monthsDesc[0]}
+      tag={tag}
     />
   );
 }

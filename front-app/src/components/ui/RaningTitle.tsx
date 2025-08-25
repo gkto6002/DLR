@@ -17,7 +17,7 @@ export default function RankingTitle({ month, tag }: Props) {
       <h1 className="text-3xl md:text-4xl font-bold text-gray-100">
         {year}年 {monthNum}月
       </h1>
-      <p className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent mt-2">
+      <p className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-pink-400 to-fuchsia-400 bg-clip-text text-transparent mt-2">
         {tagLabel} ランキング
       </p>
     </header>

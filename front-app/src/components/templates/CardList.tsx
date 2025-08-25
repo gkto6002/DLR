@@ -3,10 +3,11 @@ import { RankingJson } from "@/types/ranking";
 
 type RankingListProps = {
   items: RankingJson[];
+  tag?: string;
   type?: "ranking" | "favorite"
 };
 
-export default function CardList({ items, type="ranking"}: RankingListProps) {
+export default function CardList({ items, tag, type="ranking"}: RankingListProps) {
   if (!items || items.length === 0) {
     return <p className="text-gray-500">ランキングデータがありません。</p>;
   }
@@ -14,7 +15,7 @@ export default function CardList({ items, type="ranking"}: RankingListProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
       {items.map((item, index) => (
-        <RankingCard key={item.RJ_number} rank={index + 1} item={item} type={type}/>
+        <RankingCard key={item.RJ_number} rank={index + 1} item={item} type={type} tag={tag}/>
       ))}
     </div>
   );

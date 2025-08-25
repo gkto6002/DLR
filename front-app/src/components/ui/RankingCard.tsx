@@ -1,5 +1,6 @@
 "use client";
 
+import { labelOf } from "@/lib/tags/map";
 import { RankingJson } from "@/types/ranking";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,13 +10,14 @@ import { FaHeart, FaRegHeart } from "react-icons/fa";
 type RankingCardProps = {
   rank: number;
   item: RankingJson;
+  tag?: string;
   type?: "ranking" | "favorite"
 };
 
 // localStorageのキー
 const FAVORITES_KEY = "favorites";
 
-export default function RankingCard({ rank, item, type="ranking" }: RankingCardProps) {
+export default function RankingCard({ rank, item, tag, type = "ranking" }: RankingCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
 
   // コンポーネントがマウントされた時に、お気に入り状態をチェック
@@ -27,37 +29,37 @@ export default function RankingCard({ rank, item, type="ranking" }: RankingCardP
   }, [item.RJ_number]);
 
   const toggleFavorite = () => {
-  let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]") as RankingJson[];
-  const isCurrentlyFavorite = favorites.some(
-    (fav) => fav.RJ_number === item.RJ_number
-  );
-
-  if (isCurrentlyFavorite) {
-    // 既にお気に入りなら削除
-    favorites = favorites.filter(
-      (fav) => fav.RJ_number !== item.RJ_number
+    let favorites = JSON.parse(localStorage.getItem(FAVORITES_KEY) || "[]") as RankingJson[];
+    const isCurrentlyFavorite = favorites.some(
+      (fav) => fav.RJ_number === item.RJ_number
     );
-    setIsFavorite(false);
-  } else {
-    // お気に入りに登録
-    favorites.push(item);
-    setIsFavorite(true);
-  }
 
-  // Setを使って重複を排除
-  const uniqueFavorites = Array.from(
-    new Set(favorites.map((fav) => JSON.stringify(fav)))
-  ).map((str: unknown) => {
-    // 型ガードを使用して unknown を string に絞り込む
-    if (typeof str === 'string') {
-      return JSON.parse(str);
+    if (isCurrentlyFavorite) {
+      // 既にお気に入りなら削除
+      favorites = favorites.filter(
+        (fav) => fav.RJ_number !== item.RJ_number
+      );
+      setIsFavorite(false);
+    } else {
+      // お気に入りに登録
+      favorites.push(item);
+      setIsFavorite(true);
     }
-    // または、アサーションを使用する (推奨はしない)
-    // return JSON.parse(str as string);
-  });
 
-  localStorage.setItem(FAVORITES_KEY, JSON.stringify(uniqueFavorites));
-};
+    // Setを使って重複を排除
+    const uniqueFavorites = Array.from(
+      new Set(favorites.map((fav) => JSON.stringify(fav)))
+    ).map((str: unknown) => {
+      // 型ガードを使用して unknown を string に絞り込む
+      if (typeof str === 'string') {
+        return JSON.parse(str);
+      }
+      // または、アサーションを使用する (推奨はしない)
+      // return JSON.parse(str as string);
+    });
+
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(uniqueFavorites));
+  };
 
   const asmrOneLink = `https://www.asmr.one/work/${item.RJ_number}`;
   const jpAsmrLink = `https://japaneseasmr.com/?s=${item.RJ_number}`.replace(
@@ -71,12 +73,12 @@ export default function RankingCard({ rank, item, type="ranking" }: RankingCardP
     .replace("_240x240.jpg", ".webp");
 
   return (
-    <div className="bg-slate-800 text-white rounded-lg overflow-hidden shadow-lg border border-slate-700 flex flex-col h-full transition-transform duration-300 hover:scale-105 hover:shadow-blue-500/20">
+    <div className="bg-[#211821] text-white rounded-lg overflow-hidden shadow-lg border border-fuchsia-800/30 flex flex-col h-full transition-transform duration-300 hover:scale-105 hover:shadow-blue-500/20">
 
       {/* ランキング番号とハートボタン */}
       <div className="px-3 py-2 flex justify-between items-center">
-        {type === "ranking" ? <span className="text-xl font-bold text-blue-400">#{rank}</span> : <span className="text-xl font-bold text-pink-400">No.{rank}</span>}
-        <button onClick={toggleFavorite} className="text-xl text-red-400 hover:text-red-500 transition-colors duration-200">
+        {type === "ranking" ? <span className="text-xl font-bold text-pink-400">{!tag ? "" : labelOf(tag)} #{rank}</span> : <span className="text-xl font-bold text-red-400">No.{rank}</span>}
+        <button onClick={toggleFavorite} className="text-xl text-pink-400 hover:text-pink-500 transition-colors duration-200">
           {isFavorite ? <FaHeart /> : <FaRegHeart />}
         </button>
       </div>
@@ -112,7 +114,7 @@ export default function RankingCard({ rank, item, type="ranking" }: RankingCardP
               {item.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center rounded-full border border-slate-600 bg-slate-700/60 px-2 py-0.5 text-xs text-slate-200"
+                  className="inline-flex items-center rounded-full border px-2 py-0.5 text-xs text-white bg-[rgb(33,34,63)] border-white/20"
                 >
                   #{tag}
                 </span>

@@ -22,8 +22,8 @@ export default function Tabs({ tabs }: TabsProps) {
             key={tab.label}
             className={`py-2 px-6 font-semibold transition-colors duration-300 ${
               activeTabIndex === index
-                ? "text-white border-b-2 border-blue-500"
-                : "text-gray-400 hover:text-white"
+                ? "text-white border-b-2 border-pink-500"
+                : "text-gray-600 hover:text-white"
             }`}
             onClick={() => setActiveTabIndex(index)}
           >

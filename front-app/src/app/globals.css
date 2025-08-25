@@ -120,3 +120,18 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+/* ファイルの末尾などに以下を追加 */
+
+.main-background {
+  /* ベースとなる背景色（グラデーション非対応ブラウザ用） */
+  background-color: #09090b; /* zinc-950 */
+
+  /* 放射状グラデーション */
+  background-image: radial-gradient(
+    circle 800px at 50% -20%, /* 中心から半径800pxの円形グラデーションを、上部20%の位置に配置 */
+    #18181b, /* 中心の色 (zinc-900) */
+    #09090b 100% /* 外側の色 (zinc-950) */
+  );
+}
