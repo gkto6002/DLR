@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "DLsite Ranking Viewer",
   description: "A viewer for DLsite rankings.",
+  verification: {
+		google: "ev4FXOvvytngG5eA-42Z54MZ0XeNeyWaco6vJ7m1ilY"
+		},
   // 🔹 追加: 検索避け設定
   robots: {
     index: false,   // noindex
