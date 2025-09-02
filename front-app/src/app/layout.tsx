@@ -7,8 +7,8 @@ import BackToTopButton from "@/components/ui/BackToTopButton";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "DLsite Ranking Viewer",
-  description: "A viewer for DLsite rankings.",
+  title: "DLR",
+  description: "DRL",
   verification: {
 		google: "ev4FXOvvytngG5eA-42Z54MZ0XeNeyWaco6vJ7m1ilY"
 		},
