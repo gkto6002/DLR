@@ -13,6 +13,7 @@ type RankingViewProps = {
   early: RankingData;
   late: RankingData;
   tag: string;
+  month: string;
 };
 
 // 型ガード: オブジェクトがRankingJson[]であるかを確認
@@ -23,7 +24,8 @@ function isRankingJsonArray(data: unknown): data is RankingJson[] {
 export default function RankingView({
   early,
   late,
-  tag
+  tag,
+  month
 }: RankingViewProps) {
   // const hasAny = !!(early || late);
 
@@ -34,7 +36,7 @@ export default function RankingView({
   return (
     <main className="mx-auto max-w-6xl py-8 space-y-10">
       {/* 表示ロジックをRankingTabsコンポーネントに委任 */}
-      <RankingTabs earlyItems={earlyItems} lateItems={lateItems} tag={tag}/>
+      <RankingTabs earlyItems={earlyItems} lateItems={lateItems} tag={tag} month={month}/>
     </main>
   );
 }

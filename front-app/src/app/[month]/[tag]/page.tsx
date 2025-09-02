@@ -55,7 +55,7 @@ export default async function Page({ params }: PageProps) {
       {/* ★ 追加：遷移UI（pageでfetch済みのbatchを渡す／整形はview側） */}
       <MonthEarlyTagNavigatorFromBatch batch={allTagCounts} initialMonth={month} tag={tag} />
       <RankingTitle month={month} tag={tag} />
-      <RankingView early={early} late={late} tag={tag}/>
+      <RankingView early={early} late={late} tag={tag} month={month}/>
     </main>
   );
 }
