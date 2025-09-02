@@ -6,9 +6,10 @@ type RankingTabsProps = {
   earlyItems: RankingJson[];
   lateItems: RankingJson[];
   tag: string;
+  month: string;
 };
 
-export default function RankingTabs({ earlyItems, lateItems, tag }: RankingTabsProps) {
+export default function RankingTabs({ earlyItems, lateItems, tag, month }: RankingTabsProps) {
   const hasEarly = earlyItems.length > 0;
   const hasLate = lateItems.length > 0;
 
@@ -24,7 +25,7 @@ export default function RankingTabs({ earlyItems, lateItems, tag }: RankingTabsP
         content: <CardList items={lateItems} tag={tag}/>,
       },
     ];
-    return <Tabs tabs={tabs} />;
+    return <Tabs tabs={tabs} month={month} />;
   }
 
   // 前半のみの場合
