@@ -27,7 +27,8 @@ export const TAG_NAME_BY_ID: Record<string, string> = {
   "157": "トランス/暗示",
   "314": "トランス/暗示ボイス",
   "447": "風俗/ソープ",
-  "115_523": "逆レ&乳首責め"
+  "523_115": "乳首責め&逆レ",
+  "523_156": "乳首責め&男性受け",
 };
 
 export function labelOf(tagId: TagId): TagLabel {

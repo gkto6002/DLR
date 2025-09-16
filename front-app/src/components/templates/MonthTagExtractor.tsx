@@ -28,6 +28,8 @@ export default function MonthEarlyTagNavigator({
   const tags: TagItem[] = month ? (monthToTags[month] ?? []) : [];
   const { go } = useTagPeriodNav();
 
+  console.log({ month, tags });
+
   return (
     <section className="bg-[#211821]/60 border border-fuchsia-800/30 rounded-xl p-4 md:p-6 space-y-4">
 

@@ -39,7 +39,8 @@ export default function TagPill({ id, label, onClick, empathize = false }: Props
       style={empathize ? emphasizedStyle : baseStyle}
       aria-label={`タグ ${label}`}
     >
-      {label} <span className="text-white/60 ml-1.5">[{id}]</span>
+      {label} 
+      {/* <span className="text-white/60 ml-1.5">[{id}]</span> */}
     </button>
   );
 }
