@@ -5,8 +5,8 @@ import { useState, useEffect, CSSProperties } from 'react';
 // --- Style Definitions ---
 const baseStyle: CSSProperties = {
   position: 'fixed',
-  right: '24px',
-  bottom: '55px',
+  right: '10px',
+  bottom: '60px',
   width: '52px',
   height: '52px',
   borderRadius: '9999px',
